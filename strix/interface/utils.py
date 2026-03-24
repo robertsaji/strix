@@ -1018,6 +1018,7 @@ def resolve_diff_scope_context(
 
     repo_scopes: list[RepoDiffScope] = []
     skipped_non_git: list[str] = []
+    skipped_diff_scope: list[str] = []
     for source in local_sources:
         source_path = source.get("source_path")
         if not source_path:
@@ -1025,9 +1026,23 @@ def resolve_diff_scope_context(
         if not _is_git_repo(Path(source_path)):
             skipped_non_git.append(source_path)
             continue
-        repo_scopes.append(_resolve_repo_diff_scope(source, diff_base, env_map))
+        try:
+            repo_scopes.append(_resolve_repo_diff_scope(source, diff_base, env_map))
+        except ValueError as e:
+            if scope_mode == "auto":
+                skipped_diff_scope.append(f"{source_path} (diff-scope skipped: {e})")
+                continue
+            raise
 
     if not repo_scopes:
+        if scope_mode == "auto":
+            metadata: dict[str, Any] = {"active": False, "mode": scope_mode}
+            if skipped_non_git:
+                metadata["skipped_non_git_sources"] = skipped_non_git
+            if skipped_diff_scope:
+                metadata["skipped_diff_scope_sources"] = skipped_diff_scope
+            return DiffScopeResult(active=False, mode=scope_mode, metadata=metadata)
+
         raise ValueError(
             "Diff-scope is active, but no Git repositories were found. "
             "Use --scope-mode full to disable diff-scope for this run."
@@ -1044,6 +1059,8 @@ def resolve_diff_scope_context(
     }
     if skipped_non_git:
         metadata["skipped_non_git_sources"] = skipped_non_git
+    if skipped_diff_scope:
+        metadata["skipped_diff_scope_sources"] = skipped_diff_scope
 
     return DiffScopeResult(
         active=True,

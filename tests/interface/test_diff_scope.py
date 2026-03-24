@@ -1,6 +1,8 @@
 import importlib.util
 from pathlib import Path
 
+import pytest
+
 
 def _load_utils_module():
     module_path = Path(__file__).resolve().parents[2] / "strix" / "interface" / "utils.py"
@@ -96,3 +98,56 @@ def test_resolve_base_ref_falls_back_to_remote_main(monkeypatch) -> None:
     assert base_ref == "refs/remotes/origin/main"
     assert "refs/remotes/origin/main" in calls
     assert "origin/main" not in calls
+
+
+def test_resolve_diff_scope_context_auto_degrades_when_repo_scope_resolution_fails(
+    monkeypatch,
+) -> None:
+    source = {"source_path": "/tmp/repo", "workspace_subdir": "repo"}
+
+    monkeypatch.setattr(utils, "_should_activate_auto_scope", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr(utils, "_is_git_repo", lambda _repo_path: True)
+    monkeypatch.setattr(
+        utils,
+        "_resolve_repo_diff_scope",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("shallow history")),
+    )
+
+    result = utils.resolve_diff_scope_context(
+        local_sources=[source],
+        scope_mode="auto",
+        diff_base=None,
+        non_interactive=True,
+        env={},
+    )
+
+    assert result.active is False
+    assert result.mode == "auto"
+    assert result.metadata["active"] is False
+    assert result.metadata["mode"] == "auto"
+    assert "skipped_diff_scope_sources" in result.metadata
+    assert result.metadata["skipped_diff_scope_sources"] == [
+        "/tmp/repo (diff-scope skipped: shallow history)"
+    ]
+
+
+def test_resolve_diff_scope_context_diff_mode_still_raises_on_repo_scope_resolution_failure(
+    monkeypatch,
+) -> None:
+    source = {"source_path": "/tmp/repo", "workspace_subdir": "repo"}
+
+    monkeypatch.setattr(utils, "_is_git_repo", lambda _repo_path: True)
+    monkeypatch.setattr(
+        utils,
+        "_resolve_repo_diff_scope",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("shallow history")),
+    )
+
+    with pytest.raises(ValueError, match="shallow history"):
+        utils.resolve_diff_scope_context(
+            local_sources=[source],
+            scope_mode="diff",
+            diff_base=None,
+            non_interactive=True,
+            env={},
+        )
