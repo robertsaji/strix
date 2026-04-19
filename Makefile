@@ -41,7 +41,8 @@ lint:
 	@echo "🔍 Linting code with ruff..."
 	uv run ruff check . --fix
 	@echo "📝 Running additional linting with pylint..."
-	uv run pylint strix/ --score=no --reports=no
+	# pylint score disabled upstream; keeping reports on for personal visibility
+	uv run pylint strix/ --score=no --reports=yes
 	@echo "✅ Linting complete!"
 
 type-check:
