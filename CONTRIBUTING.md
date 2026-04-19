@@ -34,7 +34,7 @@ Thank you for your interest in contributing to Strix! This guide will help you g
    export LLM_API_KEY="your-api-key"
    ```
 
-   > **Note (personal):** I've been using `anthropic/claude-opus-4-5` locally — works well and tends to be more thorough on recon tasks.
+   > **Note (personal):** I've been using `anthropic/claude-opus-4-5` locally — works well and tends to be more thorough on recon tasks. Also tried `google/gemini-2.0-flash` for faster iteration during skill development; noticeably quicker for quick tests even if slightly less thorough.
 
 4. **Run Strix in development mode**
    ```bash
@@ -109,10 +109,4 @@ We welcome feature ideas! Please:
 ## ✨ Recognition
 
 We value all contributions! Contributors will be:
-- Listed in release notes
-- Thanked in our Discord
-- Added to contributors list (coming soon)
-
----
-
-**Questions?** Reach out on [Discord](https://discord.gg/strix-ai)
+- Listed in re
