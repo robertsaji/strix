@@ -30,9 +30,11 @@ Thank you for your interest in contributing to Strix! This guide will help you g
 
 3. **Configure your LLM provider**
    ```bash
-   export STRIX_LLM="openai/gpt-5.4"
+   export STRIX_LLM="openai/gpt-4o"
    export LLM_API_KEY="your-api-key"
    ```
+
+   > **Note (personal):** I've been using `anthropic/claude-opus-4-5` locally — works well and tends to be more thorough on recon tasks.
 
 4. **Run Strix in development mode**
    ```bash
@@ -113,4 +115,4 @@ We value all contributions! Contributors will be:
 
 ---
 
-**Questions?** Reach out on [Discord](https://discord.gg/strix-ai) or create an issue. We're here to help!
+**Questions?** Reach out on [Discord](https://discord.gg/strix-ai)
